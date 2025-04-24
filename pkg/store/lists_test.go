@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/efcan748/Golang-In-Memory/internal/store"
+	"github.com/efcan748/Golang-In-Memory/pkg/store"
 )
 
 func TestLPush(t *testing.T) {
