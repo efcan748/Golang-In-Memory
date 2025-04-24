@@ -10,8 +10,8 @@ type Server struct {
 	store *store.Store
 }
 
-func New() *Server {
+func New(cleanUpTime int) *Server {
 	return &Server{
-		store: store.New().StartCleanup(1 * time.Minute),
+		store: store.New().StartCleanup(time.Duration(cleanUpTime) * time.Minute),
 	}
 }

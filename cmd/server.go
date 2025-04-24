@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// Initialize dependencies
-	apiHandler := server.New()
+	apiHandler := server.New(1)
 	router := server.NewRouter(apiHandler)
 
 	// Start server
