@@ -8,24 +8,24 @@ import (
 
 type Store struct {
 	mu      sync.RWMutex
-	strings map[string]stringEntry
-	lists   map[string]listEntry
+	Strings map[string]stringEntry
+	Lists   map[string]listEntry
 }
 
 type stringEntry struct {
-	value      string
+	Value      string
 	expiration time.Time
 }
 
 type listEntry struct {
-	values     []string
+	Values     []string
 	expiration time.Time
 }
 
 func New() *Store {
 	return &Store{
-		strings: make(map[string]stringEntry),
-		lists:   make(map[string]listEntry),
+		Strings: make(map[string]stringEntry),
+		Lists:   make(map[string]listEntry),
 	}
 }
 
@@ -45,17 +45,17 @@ func (s *Store) cleanupExpired() {
 
 	now := time.Now()
 
-	for key, entry := range s.strings {
+	for key, entry := range s.Strings {
 		if !entry.expiration.IsZero() && now.After(entry.expiration) {
 			fmt.Println("Deleted String", key)
-			delete(s.strings, key)
+			delete(s.Strings, key)
 		}
 	}
 
-	for key, entry := range s.lists {
+	for key, entry := range s.Lists {
 		if !entry.expiration.IsZero() && now.After(entry.expiration) {
 			fmt.Println("Deleted List", key)
-			delete(s.lists, key)
+			delete(s.Lists, key)
 		}
 	}
 }

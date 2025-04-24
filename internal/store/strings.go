@@ -9,7 +9,7 @@ func (s *Store) Set(key, value string, ttl time.Duration) (string, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	_, exists := s.strings[key]
+	_, exists := s.Strings[key]
 	if exists {
 		return fmt.Sprintf("Key %s is already exist", key), false
 	}
@@ -19,8 +19,8 @@ func (s *Store) Set(key, value string, ttl time.Duration) (string, bool) {
 		expiration = time.Now().Add(ttl)
 	}
 
-	s.strings[key] = stringEntry{
-		value:      value,
+	s.Strings[key] = stringEntry{
+		Value:      value,
 		expiration: expiration,
 	}
 
@@ -31,7 +31,7 @@ func (s *Store) Update(key, value string, ttl time.Duration) (string, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	entry, exists := s.strings[key]
+	entry, exists := s.Strings[key]
 	if !exists {
 		return fmt.Sprintf("key %s not found", key), false
 	}
@@ -45,10 +45,10 @@ func (s *Store) Update(key, value string, ttl time.Duration) (string, bool) {
 		expiration = time.Now().Add(ttl)
 	}
 
-	entry.value = value
+	entry.Value = value
 	entry.expiration = expiration
 
-	s.strings[key] = entry
+	s.Strings[key] = entry
 
 	return "", true
 }
@@ -57,7 +57,7 @@ func (s *Store) Get(key string) (string, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	entry, exists := s.strings[key]
+	entry, exists := s.Strings[key]
 	if !exists {
 		return "", false
 	}
@@ -66,15 +66,15 @@ func (s *Store) Get(key string) (string, bool) {
 		return "", false
 	}
 
-	return entry.value, true
+	return entry.Value, true
 }
 
 func (s *Store) Delete(key string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, exists := s.strings[key]; exists {
-		delete(s.strings, key)
+	if _, exists := s.Strings[key]; exists {
+		delete(s.Strings, key)
 		return true
 	} else {
 		return false

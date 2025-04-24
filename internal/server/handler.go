@@ -6,21 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/efcan748/Golang-In-Memory/internal/store"
 	"github.com/efcan748/Golang-In-Memory/pkg/models"
 )
 
-type Handler struct {
-	store *store.Store
-}
-
-func New() *Handler {
-	return &Handler{
-		store: store.New().StartCleanup(1 * time.Minute),
-	}
-}
-
-func (c *Handler) Get(w http.ResponseWriter, r *http.Request) {
+func (c *Server) Get(w http.ResponseWriter, r *http.Request) {
 	key := r.URL.Query().Get("key")
 	if key == "" {
 		respondWithError(w, http.StatusBadRequest, "key is required")
@@ -36,7 +25,7 @@ func (c *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, models.GetResponse{Value: value})
 }
 
-func (c *Handler) Set(w http.ResponseWriter, r *http.Request) {
+func (c *Server) Set(w http.ResponseWriter, r *http.Request) {
 	var req models.SetRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "invalid request")
@@ -53,7 +42,7 @@ func (c *Handler) Set(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
+func (c *Server) Delete(w http.ResponseWriter, r *http.Request, id string) {
 
 	success := c.store.Delete(id)
 	if !success {
@@ -65,7 +54,7 @@ func (c *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 
 }
 
-func (c *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
+func (c *Server) Update(w http.ResponseWriter, r *http.Request, id string) {
 	var req models.UpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "invalid request")
@@ -83,7 +72,7 @@ func (c *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 
 }
 
-func (c *Handler) PushList(w http.ResponseWriter, r *http.Request) {
+func (c *Server) PushList(w http.ResponseWriter, r *http.Request) {
 	var req models.SetRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "invalid request")
@@ -101,7 +90,7 @@ func (c *Handler) PushList(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (c *Handler) PopList(w http.ResponseWriter, r *http.Request) {
+func (c *Server) PopList(w http.ResponseWriter, r *http.Request) {
 	key := r.URL.Query().Get("key")
 	if key == "" {
 		respondWithError(w, http.StatusBadRequest, "key is required")

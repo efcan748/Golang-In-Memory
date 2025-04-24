@@ -4,14 +4,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/efcan748/Golang-In-Memory/internal/api"
 	"github.com/efcan748/Golang-In-Memory/internal/server"
 )
 
 func main() {
 	// Initialize dependencies
 	apiHandler := server.New()
-	router := api.NewRouter(apiHandler)
+	router := server.NewRouter(apiHandler)
 
 	// Start server
 	server := &http.Server{

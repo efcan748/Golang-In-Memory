@@ -1,13 +1,11 @@
-package api
+package server
 
 import (
 	"net/http"
 	"strings"
-
-	"github.com/efcan748/Golang-In-Memory/internal/server"
 )
 
-func NewRouter(h *server.Handler) http.Handler {
+func NewRouter(h *Server) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/string", func(w http.ResponseWriter, r *http.Request) {
