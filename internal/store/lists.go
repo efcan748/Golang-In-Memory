@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (s *Store) LPush(key string, ttl time.Duration, values ...string) {
+func (s *Store) LPush(key string, ttl time.Duration, values ...string) (string, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	fmt.Println("============L PUSH")
@@ -24,6 +24,8 @@ func (s *Store) LPush(key string, ttl time.Duration, values ...string) {
 	}
 	fmt.Println(s.lists[key].values, s.lists[key].expiration, key, "Updated")
 
+	return "", true
+
 }
 
 func (s *Store) Pop(key string) (string, bool) {
@@ -34,15 +36,15 @@ func (s *Store) Pop(key string) (string, bool) {
 
 	fmt.Println(entry, "----------------", exists)
 	if !exists {
-		return "Key Is not exist", false
+		return "key is not exist", false
 	}
 
 	if len(entry.values) == 0 {
-		return "Empty list", true
+		return "list is empty", false
 	}
 
 	if !entry.expiration.IsZero() && time.Now().After(entry.expiration) {
-		return "List Entity is expired", false
+		return "list entity is expired", false
 	}
 
 	lastIndex := len(entry.values) - 1

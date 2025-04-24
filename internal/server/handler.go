@@ -1,7 +1,8 @@
-package client
+package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -9,17 +10,17 @@ import (
 	"github.com/efcan748/Golang-In-Memory/pkg/models"
 )
 
-type Client struct {
+type Handler struct {
 	store *store.Store
 }
 
-func New() *Client {
-	return &Client{
+func New() *Handler {
+	return &Handler{
 		store: store.New().StartCleanup(1 * time.Minute),
 	}
 }
 
-func (c *Client) Get(w http.ResponseWriter, r *http.Request) {
+func (c *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	key := r.URL.Query().Get("key")
 	if key == "" {
 		respondWithError(w, http.StatusBadRequest, "key is required")
@@ -35,7 +36,7 @@ func (c *Client) Get(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, models.GetResponse{Value: value})
 }
 
-func (c *Client) Set(w http.ResponseWriter, r *http.Request) {
+func (c *Handler) Set(w http.ResponseWriter, r *http.Request) {
 	var req models.SetRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "invalid request")
@@ -52,7 +53,7 @@ func (c *Client) Set(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *Client) Delete(w http.ResponseWriter, r *http.Request, id string) {
+func (c *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 
 	success := c.store.Delete(id)
 	if !success {
@@ -64,7 +65,7 @@ func (c *Client) Delete(w http.ResponseWriter, r *http.Request, id string) {
 
 }
 
-func (c *Client) Update(w http.ResponseWriter, r *http.Request, id string) {
+func (c *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 	var req models.UpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "invalid request")
@@ -82,29 +83,38 @@ func (c *Client) Update(w http.ResponseWriter, r *http.Request, id string) {
 
 }
 
-// func (c *Client) PushList(ctx context.Context, key string, ttl time.Duration, value ...string) error {
-// 	ttlMilisecond := time.Duration(ttl) * time.Millisecond
-// 	c.store.LPush(key, ttlMilisecond, value...)
+func (c *Handler) PushList(w http.ResponseWriter, r *http.Request) {
+	var req models.SetRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
 
-// 	return nil
-// }
+	ttlMilisecond := time.Duration(req.TTL) * time.Millisecond
+	msg, success := c.store.LPush(req.Key, ttlMilisecond, req.Value)
 
-// func (c *Client) PopList(ctx context.Context, key string) (string, error) {
-// 	value, exists := c.store.Pop(key)
-// 	if !exists {
-// 		return "", ErrKeyNotFound
-// 	}
-// 	return value, nil
-// }
+	if !success {
+		respondWithError(w, http.StatusBadRequest, msg)
+	} else {
+		respondWithJSON(w, http.StatusOK, map[string]string{"status": "successfully stored."})
+	}
 
-// Other client methods...
-
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(payload)
 }
 
-func respondWithError(w http.ResponseWriter, code int, message string) {
-	respondWithJSON(w, code, map[string]string{"error": message})
+func (c *Handler) PopList(w http.ResponseWriter, r *http.Request) {
+	key := r.URL.Query().Get("key")
+	if key == "" {
+		respondWithError(w, http.StatusBadRequest, "key is required")
+		return
+	}
+
+	value, exists := c.store.Pop(key)
+	if !exists {
+		respondWithError(w, http.StatusNotFound, value)
+		return
+	}
+
+	fmt.Println(value, "==========")
+
+	respondWithJSON(w, http.StatusOK, models.GetResponse{Value: value})
 }

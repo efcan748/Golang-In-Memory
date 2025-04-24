@@ -4,13 +4,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/efcan748/Golang-In-Memory/internal/client"
+	"github.com/efcan748/Golang-In-Memory/internal/server"
 )
 
-func NewRouter(h *client.Client) http.Handler {
+func NewRouter(h *server.Handler) http.Handler {
 	mux := http.NewServeMux()
 
-	// Handle /set with POST method
 	mux.HandleFunc("/string", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			h.Set(w, r)
@@ -22,7 +21,6 @@ func NewRouter(h *client.Client) http.Handler {
 	})
 
 	mux.HandleFunc("/string/", func(w http.ResponseWriter, r *http.Request) {
-		// Extract ID from path
 		parts := strings.Split(r.URL.Path, "/")
 		if len(parts) < 3 {
 			http.Error(w, "Invalid path", http.StatusBadRequest)
@@ -40,18 +38,17 @@ func NewRouter(h *client.Client) http.Handler {
 		}
 	})
 
-	// mux.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
-	// 	fmt.Println("-----------List Method----------")
+	mux.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
+		// 	fmt.Println("-----------List Method----------")
 
-	// 	if r.Method == http.MethodPost {
-	// 		h.PushList(w, r)
-	// 	} else if r.Method == http.MethodGet {
-	// 		h.PopList(w, r)
-	// 	} else {
-	// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	// 	}
-	// })
-	// You can add more routes for /delete, /lpush, /lpop here similarly
+		if r.Method == http.MethodPost {
+			h.PushList(w, r)
+		} else if r.Method == http.MethodGet {
+			h.PopList(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 
 	return mux
 }
